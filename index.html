@@ -197,6 +197,63 @@
     border-radius: 999px; cursor: pointer; font-weight: 600; color: var(--ink-2);
   }
   .preset-chip:hover { border-color: var(--pink); }
+
+  /* ---- ENGAGEMENT ROWS ---- */
+  .eng-row {
+    display: grid;
+    grid-template-columns: 38px minmax(0,1fr) 18px minmax(0,1fr) 70px minmax(0,1fr) 38px;
+    gap: 10px; align-items: end;
+    padding: 14px 0;
+    border-bottom: 1px dashed var(--bg-2);
+  }
+  .eng-row:last-child { border-bottom: none; }
+  .eng-letter {
+    background: linear-gradient(135deg, var(--pink), var(--purple));
+    color: white; font-weight: 800; font-size: 15px;
+    border-radius: 10px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 4px;
+    box-shadow: 0 2px 8px rgba(255,111,174,.25);
+  }
+  .eng-field {
+    background: linear-gradient(135deg, #fff, #fbf6ff);
+    border: 1.5px solid var(--border); border-radius: 12px;
+    padding: 8px 12px; position: relative; transition: all .15s;
+  }
+  .eng-field:hover { border-color: var(--pink); }
+  .eng-field:focus-within { border-color: var(--pink); box-shadow: 0 0 0 3px rgba(255,111,174,.15); }
+  .eng-field.input-mode.traffic    { border-color: var(--teal);   background: linear-gradient(135deg,#f0fbff,#ddf6fc); }
+  .eng-field.input-mode.er         { border-color: var(--yellow); background: linear-gradient(135deg,#fffaeb,#fff4d6); }
+  .eng-field.input-mode.engagement { border-color: var(--mint);   background: linear-gradient(135deg,#f0fdf6,#dcfce7); }
+  .eng-field.computed-mode { border-color: var(--border); border-style: dashed; background: linear-gradient(135deg,#fafafa,#f5f5f5); }
+  .eng-field.computed-mode input { color: var(--ink-2); }
+  .eng-field label { display: block; font-size: 10px; color: var(--mute); margin: 0 0 2px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
+  .eng-field input { width: 100%; background: transparent; border: 0; color: var(--ink); font-size: 17px; font-weight: 800; padding: 0; outline: none; font-family: inherit; }
+  .eng-field input::placeholder { color: #c8b9d3; font-weight: 600; }
+  .eng-field .badge {
+    position: absolute; top: -8px; right: 10px; font-size: 10px; padding: 2px 8px; border-radius: 999px;
+    background: var(--bg-2); color: var(--mute); font-weight: 700; letter-spacing: .3px;
+  }
+  .eng-field.input-mode .badge { background: linear-gradient(135deg, var(--pink), var(--purple)); color: white; }
+  .eng-op { font-size: 16px; color: var(--mute); padding-bottom: 14px; text-align: center; font-weight: 700; }
+  .eng-row button.del { align-self: end; margin-bottom: 6px; }
+  #btnAddRow:disabled { opacity: .4; cursor: not-allowed; filter: grayscale(.5); }
+
+  /* main Traffic field locked when synced from engagement rows */
+  .field.synced-mode {
+    border-color: var(--teal); border-style: solid;
+    background: linear-gradient(135deg, #f0fbff, #ddf6fc);
+  }
+  .field.synced-mode input { cursor: not-allowed; color: var(--ink-2); }
+  .field.synced-mode .badge { background: var(--teal); color: white; }
+
+  @media (max-width: 720px) {
+    .eng-row { grid-template-columns: 38px 1fr 38px; gap: 8px; }
+    .eng-op { display: none; }
+    .eng-row > .eng-field { grid-column: 2 / 3; }
+    .eng-letter { grid-row: 1 / span 3; height: auto; }
+    .eng-row > button.del { grid-row: 1; grid-column: 3; }
+  }
 </style>
 </head>
 <body>
@@ -289,6 +346,32 @@
     </div>
 
     <div class="calc-step" id="calcStep"></div>
+  </div>
+
+  <!-- ============ ENGAGEMENT BREAKDOWN (Traffic A..H × ER / 100 = Engagement) ============ -->
+  <div class="card" style="margin-top: 18px;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+      <div>
+        <h2 style="margin: 0;">Engagement รายช่องทาง <span style="font-size: 11px; color: var(--mute); font-weight: 600; text-transform: none; letter-spacing: 0;">(แตก Traffic ย่อย A → H)</span></h2>
+        <div style="font-size: 12px; color: var(--mute); margin-top: 4px; line-height: 1.5;">
+          สูตร: <b style="color: var(--pink);">Traffic × ER ÷ 100 = Engagement</b> · กรอก 2 ใน 3 ช่อง ระบบจะคำนวณช่องที่เหลือ<br>
+          🔗 <b>Σ Traffic จะส่งเข้าเครื่องคำนวณหลักอัตโนมัติ</b> — ช่อง Traffic ด้านบนจะล็อกเป็นผลรวม
+        </div>
+      </div>
+      <div class="toolbar">
+        <button id="btnAddRow">➕ เพิ่มบรรทัด</button>
+        <button id="btnClearRows" class="ghost">🗑️ ล้างทุกบรรทัด</button>
+      </div>
+    </div>
+
+    <div id="engRows"></div>
+
+    <div class="legend-row" style="margin-top: 14px;">
+      <span>Σ Traffic: <b id="engTotTraffic">—</b></span>
+      <span>Σ Engagement: <b id="engTotEng">—</b></span>
+      <span>Effective ER: <b id="engEffEr">—</b></span>
+      <span style="margin-left: auto;"><b id="engRowCount">1</b> / 8 บรรทัด</span>
+    </div>
   </div>
 
   <!-- ============ SCENARIO COMPARISON TABLE ============ -->
@@ -509,6 +592,7 @@ function fmtForVar(v, value) {
 }
 
 function renderCalculator() {
+  syncMainTrafficFromEng();
   const known = solve();
 
   for (const v of VARS) {
@@ -516,13 +600,22 @@ function renderCalculator() {
     const input = field.querySelector('input');
     const badge = field.querySelector('.badge');
     const isInput = calcState.inputs.includes(v);
+    const isSynced = (v === 'traffic' && getEngTotalTraffic() != null);
 
-    field.classList.toggle('input-mode', isInput);
-    field.classList.toggle('computed-mode', !isInput);
+    field.classList.toggle('input-mode', isInput && !isSynced);
+    field.classList.toggle('computed-mode', !isInput && !isSynced);
+    field.classList.toggle('synced-mode', isSynced);
     field.classList.toggle(v, true);
 
-    badge.className = 'badge ' + (isInput ? 'input' : 'computed');
-    badge.textContent = isInput ? '✏️ Input' : '🔮 Computed';
+    if (isSynced) {
+      input.readOnly = true;
+      badge.className = 'badge';
+      badge.textContent = '🔗 Σ A–H';
+    } else {
+      input.readOnly = false;
+      badge.className = 'badge ' + (isInput ? 'input' : 'computed');
+      badge.textContent = isInput ? '✏️ Input' : '🔮 Computed';
+    }
 
     // Don't overwrite user input while focused
     if (document.activeElement !== input) {
@@ -861,8 +954,165 @@ function renderSensRange() {
 ['sensMin', 'sensMax'].forEach(id => $(id).addEventListener('input', renderSensRange));
 
 /* ============================================================
+   ENGAGEMENT BREAKDOWN
+   - Equation per row: Traffic × ER / 100 = Engagement
+   - Each row independently bidirectional (any 2 of 3 → 3rd)
+   - Up to 8 rows (A → H)
+   - Σ Traffic auto-feeds main calculator's Traffic field
+   ============================================================ */
+const ENG_LETTERS = ['A','B','C','D','E','F','G','H'];
+const engState = {
+  rows: [
+    { traffic: null, er: null, engagement: null, inputs: ['traffic', 'er'] }
+  ]
+};
+
+function solveEngRow(r) {
+  const ins = r.inputs.slice(-2);
+  const known = {};
+  for (const k of ins) {
+    if (r[k] == null || r[k] === '') continue;
+    const v = +r[k];
+    if (isFinite(v)) known[k] = v;
+  }
+  // engagement = traffic × er / 100
+  if ('traffic' in known && 'er' in known) {
+    known.engagement = known.traffic * known.er / 100;
+  } else if ('engagement' in known && 'er' in known && known.er !== 0) {
+    known.traffic = known.engagement * 100 / known.er;
+  } else if ('engagement' in known && 'traffic' in known && known.traffic !== 0) {
+    known.er = known.engagement * 100 / known.traffic;
+  }
+  // write computed back to non-input fields
+  for (const k of ['traffic', 'er', 'engagement']) {
+    if (ins.includes(k)) continue;
+    r[k] = (known[k] != null && isFinite(known[k])) ? known[k] : null;
+  }
+  return known;
+}
+
+function getEngTotalTraffic() {
+  let sum = 0, has = false;
+  for (const r of engState.rows) {
+    if (r.traffic == null) continue;
+    const v = +r.traffic;
+    if (isFinite(v) && v > 0) { sum += v; has = true; }
+  }
+  return has ? sum : null;
+}
+
+function getEngTotalEngagement() {
+  let sum = 0, has = false;
+  for (const r of engState.rows) {
+    if (r.engagement == null) continue;
+    const v = +r.engagement;
+    if (isFinite(v) && v > 0) { sum += v; has = true; }
+  }
+  return has ? sum : null;
+}
+
+function syncMainTrafficFromEng() {
+  const total = getEngTotalTraffic();
+  if (total == null) return;
+  if (!calcState.inputs.includes('traffic')) {
+    calcState.inputs.push('traffic');
+    while (calcState.inputs.length > 3) calcState.inputs.shift();
+  }
+  calcState.values.traffic = total;
+}
+
+function fmtEng(v) {
+  if (v == null || !isFinite(v)) return '';
+  if (Math.abs(v) >= 1000) return Math.round(v).toString();
+  return parseFloat((+v).toFixed(4)).toString();
+}
+
+function renderEngRows() {
+  const host = $('engRows');
+  host.innerHTML = engState.rows.map((r, i) => {
+    solveEngRow(r);
+    const ins = r.inputs.slice(-2);
+    const isI = (k) => ins.includes(k);
+    const cls = (k) => 'eng-field ' + k + ' ' + (isI(k) ? 'input-mode' : 'computed-mode');
+    const letter = ENG_LETTERS[i] || '?';
+    return `
+      <div class="eng-row" data-i="${i}">
+        <div class="eng-letter">${letter}</div>
+        <div class="${cls('traffic')}">
+          <label>Traffic ${letter}</label>
+          <input type="number" step="any" data-k="traffic" placeholder="—" value="${fmtEng(r.traffic)}" />
+          <span class="badge">${isI('traffic') ? '✏️' : '🔮'}</span>
+        </div>
+        <div class="eng-op">×</div>
+        <div class="${cls('er')}">
+          <label>ER ${letter} (%)</label>
+          <input type="number" step="any" data-k="er" placeholder="—" value="${fmtEng(r.er)}" />
+          <span class="badge">${isI('er') ? '✏️' : '🔮'}</span>
+        </div>
+        <div class="eng-op">÷ 100 =</div>
+        <div class="${cls('engagement')}">
+          <label>Engagement ${letter}</label>
+          <input type="number" step="any" data-k="engagement" placeholder="—" value="${fmtEng(r.engagement)}" />
+          <span class="badge">${isI('engagement') ? '✏️' : '🔮'}</span>
+        </div>
+        <button class="del" data-del="${i}" ${engState.rows.length === 1 ? 'disabled' : ''} title="ลบบรรทัด">✕</button>
+      </div>
+    `;
+  }).join('');
+
+  host.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const tr = e.target.closest('.eng-row');
+      const i = +tr.dataset.i;
+      const k = e.target.dataset.k;
+      const r = engState.rows[i];
+      // MRU: most-recent edit becomes input; keep last 2 as inputs
+      r.inputs = r.inputs.filter(x => x !== k);
+      r.inputs.push(k);
+      while (r.inputs.length > 2) r.inputs.shift();
+      r[k] = e.target.value === '' ? null : +e.target.value;
+      renderEngRows();
+      renderCalculator();
+    });
+  });
+
+  host.querySelectorAll('button.del').forEach(b => {
+    b.onclick = e => {
+      const i = +e.currentTarget.dataset.del;
+      if (engState.rows.length <= 1) return;
+      engState.rows.splice(i, 1);
+      renderEngRows();
+      renderCalculator();
+    };
+  });
+
+  const totT = getEngTotalTraffic();
+  const totE = getEngTotalEngagement();
+  $('engTotTraffic').textContent = totT != null ? fmt.num(totT) : '—';
+  $('engTotEng').textContent = totE != null ? fmt.num(totE) : '—';
+  $('engEffEr').textContent = (totT && totE) ? ((totE / totT) * 100).toFixed(2) + '%' : '—';
+  $('engRowCount').textContent = engState.rows.length;
+
+  $('btnAddRow').disabled = engState.rows.length >= 8;
+}
+
+$('btnAddRow').onclick = () => {
+  if (engState.rows.length >= 8) return;
+  engState.rows.push({ traffic: null, er: null, engagement: null, inputs: ['traffic', 'er'] });
+  renderEngRows();
+  renderCalculator();
+};
+
+$('btnClearRows').onclick = () => {
+  engState.rows = [{ traffic: null, er: null, engagement: null, inputs: ['traffic', 'er'] }];
+  renderEngRows();
+  renderCalculator();
+};
+
+/* ============================================================
    INIT
    ============================================================ */
+renderEngRows();
 renderCalculator();
 renderScenarios();
 </script>
