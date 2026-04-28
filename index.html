@@ -1,0 +1,870 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LA GLACE · Sales Calculator 🧮</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #fbf7fd;
+    --bg-2: #f3eaf8;
+    --card: #ffffff;
+    --border: #ecdcef;
+    --ink: #2a1a3a;
+    --ink-2: #6a4d6e;
+    --mute: #998196;
+    --pink: #ff6fae;
+    --purple: #b48cff;
+    --teal: #06b6d4;
+    --yellow: #ffd166;
+    --mint: #7adcb8;
+    --peach: #ffb38a;
+    --good: #16a34a;
+    --good-bg: #e7f8ee;
+    --warn: #d97706;
+    --warn-bg: #fff4e0;
+    --bad: #dc2626;
+    --bad-bg: #fde7e7;
+    --shadow: 0 6px 22px rgba(180,140,255,.10);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Sukhumvit Set", "Noto Sans Thai", "Inter", sans-serif; }
+  body {
+    background-image: radial-gradient(circle at 0% 0%, #f6e1ff 0%, transparent 35%), radial-gradient(circle at 100% 0%, #ffe2ec 0%, transparent 30%);
+    min-height: 100vh;
+  }
+
+  header { padding: 22px 28px; display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand .mascot {
+    width: 56px; height: 56px; border-radius: 16px;
+    background: linear-gradient(135deg, #ffe0ec, #e2d4ff);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 14px rgba(180, 140, 255, .25); font-size: 28px;
+  }
+  .brand h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -.3px; }
+  .brand h1 span { background: linear-gradient(90deg, var(--pink), var(--purple)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .brand .sub { font-size: 12.5px; color: var(--mute); margin-top: 2px; }
+
+  .wrap { max-width: 1320px; margin: 0 auto; padding: 0 28px 60px; }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 18px; box-shadow: var(--shadow); }
+  .card h2 { margin: 0 0 12px; font-size: 12px; color: var(--mute); text-transform: uppercase; letter-spacing: 1.2px; font-weight: 700; }
+
+  /* ---- FORMULA BANNER ---- */
+  .formula-banner {
+    background: linear-gradient(135deg, #fff8fc, #f5edff);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 16px 20px;
+    display: flex; gap: 28px; flex-wrap: wrap; align-items: center;
+    box-shadow: var(--shadow);
+  }
+  .formula {
+    font-family: "JetBrains Mono", "Cascadia Mono", "Consolas", monospace;
+    font-size: 14.5px; color: var(--ink);
+    background: white;
+    padding: 10px 16px; border-radius: 12px;
+    border: 1px solid var(--border);
+    display: inline-flex; gap: 6px; align-items: center;
+  }
+  .formula .label { color: var(--mute); font-size: 11px; font-weight: 700; text-transform: uppercase; margin-right: 8px; }
+  .formula b { color: var(--pink); }
+
+  /* ---- BIDIRECTIONAL CALCULATOR ---- */
+  .var-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 920px) { .var-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .var-grid { grid-template-columns: 1fr; } }
+
+  label { display: block; font-size: 11px; color: var(--mute); margin-bottom: 5px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+
+  .field {
+    background: linear-gradient(135deg, #fff, #fbf6ff);
+    border: 2px solid var(--border); border-radius: 14px; padding: 14px;
+    transition: all .2s;
+    position: relative;
+    cursor: text;
+  }
+  .field:hover { border-color: var(--pink); }
+  .field:focus-within { border-color: var(--pink); box-shadow: 0 0 0 3px rgba(255,111,174,.18); }
+
+  .field .row-top { display: flex; justify-content: space-between; align-items: center; }
+  .field .icon { font-size: 18px; }
+  .field .badge {
+    font-size: 10px; padding: 3px 8px; border-radius: 999px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .5px;
+  }
+  .field .badge.input    { background: linear-gradient(135deg, var(--pink), var(--purple)); color: white; }
+  .field .badge.computed { background: var(--bg-2); color: var(--mute); }
+
+  .field input {
+    width: 100%; background: transparent; border: 0; color: var(--ink);
+    font-size: 24px; font-weight: 800; font-family: inherit;
+    padding: 4px 0 0; outline: none;
+  }
+  .field input::placeholder { color: #c8b9d3; font-weight: 600; }
+  .field .unit { font-size: 11px; color: var(--mute); font-weight: 600; margin-top: 2px; }
+
+  /* Input (locked) — colored solid border */
+  .field.input-mode.gpm     { border-color: var(--pink); background: linear-gradient(135deg, #fff8fc, #ffe6f2); }
+  .field.input-mode.aov     { border-color: var(--purple); background: linear-gradient(135deg, #f8f3ff, #ece0ff); }
+  .field.input-mode.traffic { border-color: var(--teal); background: linear-gradient(135deg, #f0fbff, #ddf6fc); }
+  .field.input-mode.conv    { border-color: var(--yellow); background: linear-gradient(135deg, #fffaeb, #fff4d6); }
+  .field.input-mode.orders  { border-color: var(--good); background: linear-gradient(135deg, #f0fdf6, #dcfce7); }
+  .field.input-mode.revenue { border-color: var(--peach); background: linear-gradient(135deg, #fff7ef, #ffe8d6); }
+
+  /* Computed mode — dimmed */
+  .field.computed-mode { background: linear-gradient(135deg, #fafafa, #f5f5f5); border-color: var(--border); border-style: dashed; }
+  .field.computed-mode input { color: var(--ink-2); font-weight: 700; }
+
+  .legend-row {
+    display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-top: 10px;
+    padding: 10px 14px; background: var(--bg-2); border-radius: 10px;
+    font-size: 12px; color: var(--ink-2);
+  }
+  .legend-row b { color: var(--ink); }
+  .legend-dot {
+    display: inline-block; width: 10px; height: 10px; border-radius: 3px;
+    vertical-align: middle; margin-right: 5px;
+  }
+
+  /* ---- SCENARIO TABLE ---- */
+  .scenarios-card { margin-top: 18px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; font-weight: 700; color: var(--mute); padding: 12px 8px; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; background: var(--bg-2); position: sticky; top: 0; }
+  th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  th:first-child { border-top-left-radius: 10px; }
+  th:last-child  { border-top-right-radius: 10px; }
+  td { padding: 8px; border-bottom: 1px solid var(--bg-2); }
+  td.num { font-weight: 700; }
+  tr:hover td { background: #fffafd; }
+  td input {
+    width: 100%; background: transparent; border: 1.5px solid transparent; color: var(--ink);
+    font-size: 14px; font-weight: 600; font-family: inherit;
+    padding: 6px 8px; border-radius: 8px; outline: none; text-align: right;
+  }
+  td input:hover  { border-color: var(--border); background: #fff; }
+  td input:focus  { border-color: var(--pink); background: white; box-shadow: 0 0 0 3px rgba(255,111,174,.12); }
+  td input.label-input { text-align: left; }
+  td.computed { color: var(--ink); }
+  .pct-pill { font-size: 11px; padding: 2px 9px; border-radius: 999px; font-weight: 700; display: inline-block; }
+  .pct-pill.good { background: var(--good-bg); color: var(--good); }
+  .pct-pill.warn { background: var(--warn-bg); color: var(--warn); }
+  .pct-pill.bad  { background: var(--bad-bg);  color: var(--bad); }
+
+  button {
+    background: linear-gradient(135deg, var(--pink), var(--purple));
+    color: white; border: 0; padding: 10px 16px; border-radius: 10px;
+    font-weight: 700; cursor: pointer; font-size: 13px;
+    box-shadow: 0 4px 12px rgba(255, 111, 174, .25);
+    white-space: nowrap;
+  }
+  button:hover { filter: brightness(1.05); }
+  button.ghost { background: white; border: 1px solid var(--border); color: var(--ink); box-shadow: none; }
+  button.ghost:hover { background: var(--bg-2); }
+  button.del { background: transparent; color: var(--bad); padding: 4px 8px; box-shadow: none; font-size: 16px; border-radius: 6px; }
+  button.del:hover { background: var(--bad-bg); }
+
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* ---- SENSITIVITY CHARTS ---- */
+  .grid-2-eq { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+  @media (max-width: 1100px) { .grid-2-eq { grid-template-columns: 1fr; } }
+  .chart-card .head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+  .chart-card .head h3 { margin: 0; font-size: 15px; font-weight: 700; }
+  .chart-card .head .hint { font-size: 11px; color: var(--mute); }
+  .chart-host { position: relative; height: 280px; }
+
+  .calc-step {
+    background: var(--bg-2); border-radius: 10px; padding: 10px 14px;
+    font-family: "Consolas", monospace; font-size: 13px; color: var(--ink-2);
+    margin-top: 10px;
+  }
+  .calc-step b { color: var(--pink); }
+  .calc-step .arrow { color: var(--purple); margin: 0 6px; }
+
+  /* sparkles */
+  .sparkle { position: absolute; pointer-events: none; opacity: .5; }
+  .sparkle.s1 { top: 60px; left: 8%; font-size: 18px; }
+  .sparkle.s2 { top: 100px; right: 6%; font-size: 14px; }
+
+  details summary { cursor: pointer; color: var(--mute); font-size: 12px; padding: 6px 0; user-select: none; font-weight: 600; }
+
+  .preset-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .preset-chip {
+    font-size: 12px; padding: 6px 12px; background: white; border: 1px solid var(--border);
+    border-radius: 999px; cursor: pointer; font-weight: 600; color: var(--ink-2);
+  }
+  .preset-chip:hover { border-color: var(--pink); }
+</style>
+</head>
+<body>
+<div class="sparkle s1">✨</div>
+<div class="sparkle s2">🧮</div>
+
+<header>
+  <div class="brand">
+    <div class="mascot">🧮</div>
+    <div>
+      <h1><span>LA GLACE</span> · Sales Calculator</h1>
+      <div class="sub">คำนวณยอดขายจาก GPM / AOV / Traffic — เปรียบเทียบ scenarios ได้</div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ============ FORMULA BANNER ============ -->
+  <div class="formula-banner">
+    <div class="formula">
+      <span class="label">สมการที่ 1</span>
+      <b>Conversion</b> = GPM ÷ (10 × AOV)
+    </div>
+    <div class="formula">
+      <span class="label">สมการที่ 2</span>
+      <b>Order</b> = Traffic × Conversion
+    </div>
+    <div class="formula">
+      <span class="label">เพิ่มเติม</span>
+      <b>Revenue</b> = Order × AOV
+    </div>
+  </div>
+
+  <!-- ============ BIDIRECTIONAL CALCULATOR ============ -->
+  <div class="card" style="margin-top: 18px;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+      <div>
+        <h2 style="margin: 0;">เครื่องคำนวณ — ปรับค่าได้ทุกตัว</h2>
+        <div style="font-size: 12px; color: var(--mute); margin-top: 4px; line-height: 1.5;">
+          พิมพ์ตัวเลขในช่องไหนก็ได้ — ระบบจะคำนวณช่องอื่นให้เอง<br>
+          ✨ <b>3 ค่าที่คุณกรอกล่าสุด = ตัวตั้งต้น</b> · 3 ค่าที่เหลือ = ผลคำนวณ
+        </div>
+      </div>
+      <div class="preset-row" style="margin-top: 0;">
+        <span class="preset-chip" data-preset="small">🌱 Live เล็ก</span>
+        <span class="preset-chip" data-preset="medium">🌸 Live กลาง</span>
+        <span class="preset-chip" data-preset="big">🚀 Live ใหญ่</span>
+        <span class="preset-chip" data-preset="viral">⚡ Viral</span>
+      </div>
+    </div>
+
+    <div class="var-grid" id="varGrid">
+      <div class="field" data-var="gpm">
+        <div class="row-top"><label style="margin: 0;"><span class="icon">📊</span> GPM</label><span class="badge"></span></div>
+        <input type="number" step="any" placeholder="—" data-input="gpm" />
+        <div class="unit">฿ ต่อ 1,000 views</div>
+      </div>
+      <div class="field" data-var="aov">
+        <div class="row-top"><label style="margin: 0;"><span class="icon">💎</span> AOV</label><span class="badge"></span></div>
+        <input type="number" step="any" placeholder="—" data-input="aov" />
+        <div class="unit">฿ ต่อ order (Average Order Value)</div>
+      </div>
+      <div class="field" data-var="traffic">
+        <div class="row-top"><label style="margin: 0;"><span class="icon">👀</span> Traffic</label><span class="badge"></span></div>
+        <input type="number" step="any" placeholder="—" data-input="traffic" />
+        <div class="unit">จำนวน views / คนเข้า</div>
+      </div>
+      <div class="field" data-var="conv">
+        <div class="row-top"><label style="margin: 0;"><span class="icon">🎯</span> Conversion</label><span class="badge"></span></div>
+        <input type="number" step="any" placeholder="—" data-input="conv" />
+        <div class="unit">% (เช่น 0.34 = 0.34%)</div>
+      </div>
+      <div class="field" data-var="orders">
+        <div class="row-top"><label style="margin: 0;"><span class="icon">🛒</span> Orders</label><span class="badge"></span></div>
+        <input type="number" step="any" placeholder="—" data-input="orders" />
+        <div class="unit">จำนวน order ที่ได้</div>
+      </div>
+      <div class="field" data-var="revenue">
+        <div class="row-top"><label style="margin: 0;"><span class="icon">💰</span> Revenue</label><span class="badge"></span></div>
+        <input type="number" step="any" placeholder="—" data-input="revenue" />
+        <div class="unit">฿ ยอดขายรวม</div>
+      </div>
+    </div>
+
+    <div class="legend-row">
+      <span><span class="legend-dot" style="background: linear-gradient(135deg, var(--pink), var(--purple));"></span><b>Input</b> = ค่าที่คุณกรอก (ขอบสี)</span>
+      <span><span class="legend-dot" style="background: var(--bg-2); border: 1px dashed var(--border);"></span><b>Computed</b> = คำนวณให้ (ขอบประ)</span>
+      <span style="margin-left: auto;"><b id="solveStatus">✓ Solver พร้อม</b></span>
+    </div>
+
+    <div class="calc-step" id="calcStep"></div>
+  </div>
+
+  <!-- ============ SCENARIO COMPARISON TABLE ============ -->
+  <div class="card scenarios-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+      <div>
+        <h2 style="margin: 0;">เปรียบเทียบ Scenarios</h2>
+        <div style="font-size: 12px; color: var(--mute); margin-top: 4px;">แก้ค่าในตารางได้โดยตรง · เพิ่ม row ได้ไม่จำกัด</div>
+      </div>
+      <div class="toolbar">
+        <button id="btnAdd">➕ เพิ่ม Scenario</button>
+        <button id="btnDuplicate" class="ghost">📋 Duplicate ล่าสุด</button>
+        <button id="btnClear" class="ghost">🗑️ ล้างทั้งหมด</button>
+        <button id="btnExport" class="ghost">💾 Export CSV</button>
+      </div>
+    </div>
+
+    <div style="overflow-x: auto;">
+      <table id="tblScenarios">
+        <thead>
+          <tr>
+            <th>Scenario</th>
+            <th class="num">GPM (฿/1K)</th>
+            <th class="num">AOV (฿)</th>
+            <th class="num">Traffic</th>
+            <th class="num">Conversion</th>
+            <th class="num">Orders</th>
+            <th class="num">Revenue</th>
+            <th class="num">vs Best</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot>
+          <tr style="background: var(--bg-2); font-weight: 700;">
+            <td>📊 รวม / เฉลี่ย</td>
+            <td class="num" id="totGpm">—</td>
+            <td class="num" id="totAov">—</td>
+            <td class="num" id="totTraffic">—</td>
+            <td class="num" id="totConv">—</td>
+            <td class="num" id="totOrd">—</td>
+            <td class="num" id="totRev">—</td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ SENSITIVITY CHARTS ============ -->
+  <div class="grid-2-eq">
+    <div class="card">
+      <div class="head" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <div>
+          <h3 style="margin: 0; font-size: 15px; font-weight: 700;">📈 Revenue vs Traffic</h3>
+          <div class="hint" style="font-size: 11px; color: var(--mute);">เพิ่ม traffic ผลลัพธ์เพิ่มเชิงเส้น (ที่ GPM/AOV เดิม)</div>
+        </div>
+      </div>
+      <div class="chart-host"><canvas id="chartTraffic"></canvas></div>
+    </div>
+
+    <div class="card">
+      <div class="head" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <div>
+          <h3 style="margin: 0; font-size: 15px; font-weight: 700;">📊 Conversion vs AOV</h3>
+          <div class="hint" style="font-size: 11px; color: var(--mute);">AOV สูงขึ้น Conv% จะลดลง (GPM คงที่)</div>
+        </div>
+      </div>
+      <div class="chart-host"><canvas id="chartAov"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 18px;">
+    <h2>🎯 Sensitivity Analysis — ปรับ GPM ดูผล</h2>
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 18px; align-items: center;">
+      <div>
+        <label>GPM Range (฿/1000 views)</label>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <span style="font-size: 12px; color: var(--mute);">฿</span>
+          <input id="sensMin" type="number" value="50" style="width: 80px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;" />
+          <span style="font-size: 12px; color: var(--mute);">→ ฿</span>
+          <input id="sensMax" type="number" value="500" style="width: 80px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;" />
+        </div>
+        <div style="font-size: 12px; color: var(--mute); margin-top: 8px; line-height: 1.5;">
+          ใช้ AOV และ Traffic จากเครื่องคำนวณด่วนด้านบน เพื่อดูว่า revenue เปลี่ยนแปลงยังไงเมื่อ GPM เปลี่ยน
+        </div>
+      </div>
+      <div class="chart-host"><canvas id="chartSens"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ============ HELP ============ -->
+  <div class="card" style="margin-top: 18px;">
+    <details>
+      <summary>📖 คำอธิบายตัวแปร</summary>
+      <div style="margin-top: 10px; font-size: 13px; line-height: 1.7; color: var(--ink-2);">
+        <p><b>GPM (Gross Profit per Mille)</b> — ยอดขายต่อ 1,000 views — เป็น metric หลักของ TikTok Shop ที่บอกว่า traffic 1,000 ครั้ง สร้างยอดได้กี่บาท ค่าทั่วไปอยู่ที่ ฿80-300 (live ดี ฿200+, viral อาจ ฿500+)</p>
+        <p><b>AOV (Average Order Value)</b> — มูลค่าเฉลี่ยของ 1 order ของ LA GLACE มักอยู่ในช่วง ฿250-450 (ลิป/บลัช) ถึง ฿500-700 (set / สกินแคร์)</p>
+        <p><b>Traffic</b> — จำนวน views หรือคนที่เห็น content/live (TikTok Shop นับเป็น product page views)</p>
+        <p><b>Conversion Rate</b> — อัตราการแปลงคนดูเป็นออเดอร์ — สูตรนี้ derive จากความสัมพันธ์: Revenue = Orders × AOV และ GPM = Revenue × 1000 / Traffic ดังนั้น Conversion% = Orders / Traffic × 100 = GPM / (10 × AOV)</p>
+        <p><b>Order / Revenue</b> — จำนวน order ที่เกิด และยอดขายรวม</p>
+      </div>
+    </details>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+const fmt = {
+  baht: v => '฿' + Math.round(v).toLocaleString(),
+  short: v => {
+    if (Math.abs(v) >= 1e6) return '฿' + (v / 1e6).toFixed(2) + 'M';
+    if (Math.abs(v) >= 1e3) return '฿' + (v / 1e3).toFixed(1) + 'K';
+    return '฿' + Math.round(v).toLocaleString();
+  },
+  num: v => Math.round(v).toLocaleString(),
+  pct: v => v.toFixed(2) + '%',
+};
+
+/* ============================================================
+   CORE CALCULATION (legacy 3-input → 3-output)
+   - Conversion (%) = GPM / (10 × AOV)
+   - Order = Traffic × Conversion (decimal)
+   - Revenue = Order × AOV
+   - Also: Revenue = Traffic × GPM / 1000 (derived)
+   ============================================================ */
+function calc(gpm, aov, traffic) {
+  if (aov <= 0) return { conv: 0, orders: 0, revenue: 0 };
+  const convPct = gpm / (10 * aov);
+  const orders = traffic * (convPct / 100);
+  const revenue = orders * aov;
+  return { conv: convPct, orders, revenue };
+}
+
+/* ============================================================
+   BIDIRECTIONAL SOLVER
+   Variables: gpm, aov, traffic, conv (%), orders, revenue
+   The user types in any field → that becomes an "input".
+   The 3 most-recently-edited fields are inputs.
+   The other 3 are computed using the constraint rules below.
+   ============================================================ */
+const VAR_LABELS = {
+  gpm:     { label: 'GPM',        unit: '฿/1K views', emoji: '📊' },
+  aov:     { label: 'AOV',        unit: '฿/order',    emoji: '💎' },
+  traffic: { label: 'Traffic',    unit: 'views',      emoji: '👀' },
+  conv:    { label: 'Conversion', unit: '%',          emoji: '🎯' },
+  orders:  { label: 'Orders',     unit: 'orders',     emoji: '🛒' },
+  revenue: { label: 'Revenue',    unit: '฿',          emoji: '💰' },
+};
+const VARS = Object.keys(VAR_LABELS);
+
+const RULES = [
+  // Each rule: from `needs`, derive `gives`. fn takes named args.
+  { needs: ['gpm', 'aov'],          gives: 'conv',    fn: ({gpm, aov})              => gpm / (10 * aov) },
+  { needs: ['conv', 'aov'],         gives: 'gpm',     fn: ({conv, aov})             => 10 * aov * conv },
+  { needs: ['gpm', 'conv'],         gives: 'aov',     fn: ({gpm, conv})             => gpm / (10 * conv) },
+  { needs: ['traffic', 'conv'],     gives: 'orders',  fn: ({traffic, conv})         => traffic * conv / 100 },
+  { needs: ['orders', 'conv'],      gives: 'traffic', fn: ({orders, conv})          => 100 * orders / conv },
+  { needs: ['orders', 'traffic'],   gives: 'conv',    fn: ({orders, traffic})       => 100 * orders / traffic },
+  { needs: ['orders', 'aov'],       gives: 'revenue', fn: ({orders, aov})           => orders * aov },
+  { needs: ['revenue', 'aov'],      gives: 'orders',  fn: ({revenue, aov})          => revenue / aov },
+  { needs: ['revenue', 'orders'],   gives: 'aov',     fn: ({revenue, orders})       => revenue / orders },
+  // Derived: Revenue = Traffic × GPM / 1000
+  { needs: ['traffic', 'gpm'],      gives: 'revenue', fn: ({traffic, gpm})          => traffic * gpm / 1000 },
+  { needs: ['revenue', 'traffic'],  gives: 'gpm',     fn: ({revenue, traffic})      => 1000 * revenue / traffic },
+  { needs: ['revenue', 'gpm'],      gives: 'traffic', fn: ({revenue, gpm})          => 1000 * revenue / gpm },
+];
+
+const calcState = {
+  values:  { gpm: 150, aov: 350, traffic: 50000, conv: null, orders: null, revenue: null },
+  // MRU queue — front = oldest, back = newest. Always keep last 3.
+  inputs:  ['gpm', 'aov', 'traffic'],
+};
+
+function solve() {
+  // Start with known values from input set
+  const known = {};
+  for (const v of calcState.inputs) {
+    const n = +calcState.values[v];
+    if (isFinite(n) && n > 0) known[v] = n;
+  }
+
+  // Apply rules until no progress
+  let progress = true, iterations = 0;
+  while (progress && iterations < 20) {
+    progress = false;
+    iterations++;
+    for (const rule of RULES) {
+      if (rule.gives in known) continue;
+      if (rule.needs.every(n => n in known)) {
+        const args = {};
+        for (const n of rule.needs) args[n] = known[n];
+        const v = rule.fn(args);
+        if (isFinite(v) && !isNaN(v)) {
+          known[rule.gives] = v;
+          progress = true;
+        }
+      }
+    }
+  }
+
+  // Update values
+  for (const v of VARS) {
+    if (calcState.inputs.includes(v)) continue; // keep user input value
+    calcState.values[v] = known[v] ?? null;
+  }
+  return known;
+}
+
+function fmtForVar(v, value) {
+  if (value == null || !isFinite(value)) return '';
+  if (v === 'conv') return value.toFixed(3);
+  if (v === 'traffic' || v === 'orders') return Math.round(value).toString();
+  if (v === 'revenue') return Math.round(value).toString();
+  return parseFloat(value.toFixed(4)).toString();
+}
+
+function renderCalculator() {
+  const known = solve();
+
+  for (const v of VARS) {
+    const field = document.querySelector(`.field[data-var="${v}"]`);
+    const input = field.querySelector('input');
+    const badge = field.querySelector('.badge');
+    const isInput = calcState.inputs.includes(v);
+
+    field.classList.toggle('input-mode', isInput);
+    field.classList.toggle('computed-mode', !isInput);
+    field.classList.toggle(v, true);
+
+    badge.className = 'badge ' + (isInput ? 'input' : 'computed');
+    badge.textContent = isInput ? '✏️ Input' : '🔮 Computed';
+
+    // Don't overwrite user input while focused
+    if (document.activeElement !== input) {
+      const val = calcState.values[v];
+      input.value = fmtForVar(v, val);
+    }
+  }
+
+  // Calculation steps
+  const v = calcState.values;
+  const allDone = VARS.every(k => v[k] != null && isFinite(v[k]));
+  if (allDone) {
+    $('calcStep').innerHTML = `
+      <div style="margin-bottom:6px; color: var(--ink);"><b>การคำนวณ:</b></div>
+      • Conversion = ${num(v.gpm)} ÷ (10 × ${num(v.aov)}) = <b>${v.conv.toFixed(3)}%</b><br>
+      • Orders = ${num(v.traffic)} × ${(v.conv/100).toFixed(5)} = <b>${num(v.orders)}</b><br>
+      • Revenue = ${num(v.orders)} × ${num(v.aov)} = <b>${fmt.baht(v.revenue)}</b>
+      <span class="arrow">·</span> หรือ Revenue = Traffic × GPM / 1000 = <b>${fmt.baht(v.traffic * v.gpm / 1000)}</b>
+    `;
+    $('solveStatus').textContent = '✓ คำนวณครบ';
+    $('solveStatus').style.color = 'var(--good)';
+  } else {
+    const missing = VARS.filter(k => v[k] == null || !isFinite(v[k]));
+    $('calcStep').innerHTML = `
+      <div style="color: var(--warn);">⚠️ ยังคำนวณไม่ครบ — ลองเปลี่ยนชุดตัวตั้งต้น
+      (ขาด: ${missing.map(m => VAR_LABELS[m].label).join(', ')})</div>
+      <div style="font-size: 11px; color: var(--mute); margin-top: 4px;">
+        ตัวอย่างชุดที่ใช้ได้: GPM+AOV+Traffic / AOV+Conv+Orders / Revenue+Traffic+AOV
+      </div>
+    `;
+    $('solveStatus').textContent = '⚠ ใส่ชุดอื่น';
+    $('solveStatus').style.color = 'var(--warn)';
+  }
+
+  renderSensitivityCharts();
+}
+
+function num(v) {
+  if (v == null) return '—';
+  if (Math.abs(v) >= 1000) return Math.round(v).toLocaleString();
+  return parseFloat(v.toFixed(3)).toString();
+}
+
+// Wire input handlers — every field can be edited
+document.querySelectorAll('.field input[data-input]').forEach(input => {
+  const v = input.dataset.input;
+
+  input.addEventListener('focus', () => {
+    // When user focuses an unused field, prepare to mark it as input on first keystroke
+    input.dataset.dirtyOnInput = '1';
+  });
+
+  input.addEventListener('input', () => {
+    // Mark this var as the most-recent input (MRU)
+    if (calcState.inputs.includes(v)) {
+      calcState.inputs = calcState.inputs.filter(x => x !== v);
+    }
+    calcState.inputs.push(v);
+    // Keep only last 3 inputs
+    while (calcState.inputs.length > 3) calcState.inputs.shift();
+
+    const raw = input.value;
+    if (raw === '' || raw === '-') {
+      calcState.values[v] = null;
+    } else {
+      calcState.values[v] = +raw;
+    }
+    renderCalculator();
+  });
+});
+
+const PRESETS = {
+  small:  { gpm: 80,  aov: 290, traffic: 10000  },
+  medium: { gpm: 150, aov: 350, traffic: 50000  },
+  big:    { gpm: 220, aov: 420, traffic: 200000 },
+  viral:  { gpm: 350, aov: 380, traffic: 1000000 },
+};
+document.querySelectorAll('.preset-chip').forEach(c => {
+  c.onclick = () => {
+    const p = PRESETS[c.dataset.preset];
+    calcState.inputs = ['gpm', 'aov', 'traffic'];
+    calcState.values = { gpm: p.gpm, aov: p.aov, traffic: p.traffic, conv: null, orders: null, revenue: null };
+    renderCalculator();
+  };
+});
+
+// Compatibility shim — sensitivity charts read from $('iGpm') etc.
+// Replace those with calcState.values.
+function getCalcVal(name) { return calcState.values[name]; }
+
+/* ============================================================
+   SCENARIOS TABLE
+   ============================================================ */
+const SCENARIO_DEFAULTS = [
+  { label: '🌸 Baseline',          gpm: 150, aov: 350, traffic: 50000 },
+  { label: '🚀 Live ใหญ่',          gpm: 220, aov: 420, traffic: 200000 },
+  { label: '⚡ Viral campaign',     gpm: 350, aov: 380, traffic: 800000 },
+  { label: '💎 Premium drop',       gpm: 280, aov: 590, traffic: 80000 },
+  { label: '🌱 ปกติ Daily',         gpm: 100, aov: 290, traffic: 25000 },
+];
+const state = { scenarios: SCENARIO_DEFAULTS.map(s => ({ ...s })), charts: {} };
+
+function renderScenarios() {
+  const tb = $('tblScenarios').querySelector('tbody');
+  tb.innerHTML = state.scenarios.map((s, i) => {
+    const r = calc(+s.gpm || 0, +s.aov || 0, +s.traffic || 0);
+    return `<tr data-i="${i}">
+      <td><input type="text" class="label-input" value="${escapeHtml(s.label)}" data-k="label" /></td>
+      <td class="num"><input type="number" step="any" value="${s.gpm}" data-k="gpm" /></td>
+      <td class="num"><input type="number" step="any" value="${s.aov}" data-k="aov" /></td>
+      <td class="num"><input type="number" step="any" value="${s.traffic}" data-k="traffic" /></td>
+      <td class="num computed">${fmt.pct(r.conv)}</td>
+      <td class="num computed">${fmt.num(r.orders)}</td>
+      <td class="num computed"><b>${fmt.short(r.revenue)}</b></td>
+      <td class="num computed"><span class="vs-best" data-rev="${r.revenue}">—</span></td>
+      <td><button class="del" data-del="${i}" title="ลบ">✕</button></td>
+    </tr>`;
+  }).join('');
+
+  // Wire input handlers
+  for (const inp of tb.querySelectorAll('input')) {
+    inp.oninput = e => {
+      const tr = e.target.closest('tr');
+      const i = +tr.dataset.i;
+      const k = e.target.dataset.k;
+      state.scenarios[i][k] = (k === 'label') ? e.target.value : (+e.target.value || 0);
+      // Re-render only computed cells in this row
+      const s = state.scenarios[i];
+      const r = calc(+s.gpm || 0, +s.aov || 0, +s.traffic || 0);
+      const cells = tr.querySelectorAll('td.computed');
+      cells[0].textContent = fmt.pct(r.conv);
+      cells[1].textContent = fmt.num(r.orders);
+      cells[2].innerHTML = '<b>' + fmt.short(r.revenue) + '</b>';
+      cells[3].querySelector('.vs-best').dataset.rev = r.revenue;
+      updateBest();
+      updateTotals();
+    };
+  }
+  for (const btn of tb.querySelectorAll('button.del')) {
+    btn.onclick = e => {
+      const i = +e.currentTarget.dataset.del;
+      state.scenarios.splice(i, 1);
+      renderScenarios();
+    };
+  }
+  updateBest();
+  updateTotals();
+}
+
+function updateBest() {
+  const revs = state.scenarios.map(s => calc(+s.gpm, +s.aov, +s.traffic).revenue);
+  const best = Math.max(...revs, 1);
+  for (const el of document.querySelectorAll('.vs-best')) {
+    const r = +el.dataset.rev;
+    const pct = (r / best) * 100;
+    let cls = 'good';
+    if (pct < 50) cls = 'bad';
+    else if (pct < 80) cls = 'warn';
+    el.outerHTML = `<span class="vs-best pct-pill ${cls}" data-rev="${r}">${pct.toFixed(0)}%</span>`;
+  }
+}
+
+function updateTotals() {
+  const items = state.scenarios.map(s => calc(+s.gpm || 0, +s.aov || 0, +s.traffic || 0));
+  const totRev = items.reduce((a, b) => a + b.revenue, 0);
+  const totOrd = items.reduce((a, b) => a + b.orders, 0);
+  const totTraffic = state.scenarios.reduce((a, b) => a + (+b.traffic || 0), 0);
+  const avgGpm = state.scenarios.length > 0 ? state.scenarios.reduce((a, b) => a + (+b.gpm || 0), 0) / state.scenarios.length : 0;
+  const avgAov = state.scenarios.length > 0 ? state.scenarios.reduce((a, b) => a + (+b.aov || 0), 0) / state.scenarios.length : 0;
+  const avgConv = state.scenarios.length > 0 ? items.reduce((a, b) => a + b.conv, 0) / items.length : 0;
+  $('totGpm').textContent     = avgGpm.toFixed(0);
+  $('totAov').textContent     = avgAov.toFixed(0);
+  $('totTraffic').textContent = fmt.num(totTraffic);
+  $('totConv').textContent    = fmt.pct(avgConv);
+  $('totOrd').textContent     = fmt.num(totOrd);
+  $('totRev').innerHTML       = '<b>' + fmt.short(totRev) + '</b>';
+}
+
+$('btnAdd').onclick = () => {
+  state.scenarios.push({ label: '✨ Scenario ' + (state.scenarios.length + 1), gpm: 150, aov: 350, traffic: 30000 });
+  renderScenarios();
+};
+$('btnDuplicate').onclick = () => {
+  const last = state.scenarios[state.scenarios.length - 1];
+  if (last) state.scenarios.push({ ...last, label: last.label + ' (copy)' });
+  renderScenarios();
+};
+$('btnClear').onclick = () => {
+  if (confirm('ลบ scenarios ทั้งหมด?')) { state.scenarios = []; renderScenarios(); }
+};
+
+$('btnExport').onclick = () => {
+  const head = ['Scenario', 'GPM', 'AOV', 'Traffic', 'Conversion%', 'Orders', 'Revenue'];
+  const lines = [head.join(',')];
+  for (const s of state.scenarios) {
+    const r = calc(+s.gpm, +s.aov, +s.traffic);
+    lines.push([s.label, s.gpm, s.aov, s.traffic, r.conv.toFixed(4), Math.round(r.orders), Math.round(r.revenue)].join(','));
+  }
+  const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'laglace-sales-scenarios-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click(); URL.revokeObjectURL(url);
+};
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ============================================================
+   SENSITIVITY CHARTS
+   ============================================================ */
+function destroyChart(name) { if (state.charts[name]) { state.charts[name].destroy(); delete state.charts[name]; } }
+function chartOpts(extra = {}) {
+  return Object.assign({
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { font: { family: 'inherit' }, padding: 12, boxWidth: 12 } },
+    },
+  }, extra);
+}
+
+function renderSensitivityCharts() {
+  const gpm = +calcState.values.gpm || 0;
+  const aov = +calcState.values.aov || 1;
+  const traffic = +calcState.values.traffic || 0;
+
+  // Chart 1: Revenue vs Traffic (varying traffic 0..2× current)
+  destroyChart('traffic');
+  const trafficSteps = [];
+  const maxT = Math.max(traffic * 2, 100000);
+  for (let i = 0; i <= 10; i++) trafficSteps.push(maxT * i / 10);
+  const trafficRev = trafficSteps.map(t => calc(gpm, aov, t).revenue);
+  state.charts.traffic = new Chart($('chartTraffic').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: trafficSteps.map(t => fmt.num(t)),
+      datasets: [{
+        label: 'Revenue',
+        data: trafficRev,
+        borderColor: '#06b6d4',
+        backgroundColor: 'rgba(6,182,212,.15)',
+        fill: true, tension: 0.4, borderWidth: 3, pointRadius: 4,
+        pointBackgroundColor: '#06b6d4'
+      }]
+    },
+    options: chartOpts({
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => fmt.baht(c.parsed.y) } } },
+      scales: {
+        y: { ticks: { callback: v => fmt.short(v) }, grid: { color: '#f3eaf8' } },
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+      }
+    })
+  });
+
+  // Chart 2: Conversion vs AOV
+  destroyChart('aov');
+  const aovSteps = [];
+  for (let i = 100; i <= 800; i += 50) aovSteps.push(i);
+  const convs = aovSteps.map(a => calc(gpm, a, traffic).conv);
+  state.charts.aov = new Chart($('chartAov').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: aovSteps.map(a => '฿' + a),
+      datasets: [{
+        label: 'Conversion %',
+        data: convs,
+        borderColor: '#b48cff',
+        backgroundColor: 'rgba(180,140,255,.15)',
+        fill: true, tension: 0.4, borderWidth: 3, pointRadius: 3,
+        pointBackgroundColor: '#b48cff'
+      }]
+    },
+    options: chartOpts({
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.y.toFixed(2) + '%' } } },
+      scales: {
+        y: { ticks: { callback: v => v.toFixed(2) + '%' }, grid: { color: '#f3eaf8' } },
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+      }
+    })
+  });
+
+  // Chart 3: Sensitivity (Revenue vs GPM range)
+  renderSensRange();
+}
+
+function renderSensRange() {
+  destroyChart('sens');
+  const min = +$('sensMin').value || 0;
+  const max = +$('sensMax').value || 500;
+  const aov = +calcState.values.aov || 1;
+  const traffic = +calcState.values.traffic || 0;
+  const steps = [];
+  const stepCount = 12;
+  for (let i = 0; i <= stepCount; i++) steps.push(min + (max - min) * i / stepCount);
+  const revs   = steps.map(g => calc(g, aov, traffic).revenue);
+  const orders = steps.map(g => calc(g, aov, traffic).orders);
+
+  state.charts.sens = new Chart($('chartSens').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: steps.map(g => '฿' + Math.round(g)),
+      datasets: [
+        {
+          label: 'Revenue (฿)',
+          data: revs,
+          backgroundColor: steps.map((_, i) => `rgba(255, 111, 174, ${0.4 + i/stepCount * 0.6})`),
+          borderRadius: 8,
+          yAxisID: 'y',
+        },
+        {
+          label: 'Orders',
+          data: orders,
+          type: 'line',
+          borderColor: '#06b6d4',
+          backgroundColor: 'transparent',
+          borderWidth: 3, tension: 0.35, pointRadius: 3,
+          yAxisID: 'y1',
+        }
+      ]
+    },
+    options: chartOpts({
+      plugins: {
+        legend: { position: 'bottom', labels: { padding: 12 } },
+        tooltip: { callbacks: { label: c => c.dataset.label + ': ' + (c.dataset.label.includes('฿') || c.dataset.label.includes('Revenue') ? fmt.baht(c.parsed.y) : fmt.num(c.parsed.y)) } }
+      },
+      scales: {
+        y:  { position: 'left',  ticks: { callback: v => fmt.short(v) }, grid: { color: '#f3eaf8' }, title: { display: true, text: 'Revenue', font: { size: 11 } } },
+        y1: { position: 'right', ticks: { callback: v => fmt.num(v) }, grid: { display: false },     title: { display: true, text: 'Orders', font: { size: 11 } } },
+        x:  { grid: { display: false }, ticks: { font: { size: 10 } }, title: { display: true, text: 'GPM (฿/1,000 views)', font: { size: 11 } } }
+      }
+    })
+  });
+}
+
+['sensMin', 'sensMax'].forEach(id => $(id).addEventListener('input', renderSensRange));
+
+/* ============================================================
+   INIT
+   ============================================================ */
+renderCalculator();
+renderScenarios();
+</script>
+</body>
+</html>
