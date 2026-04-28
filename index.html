@@ -107,7 +107,6 @@
   .field .unit { font-size: 11px; color: var(--mute); font-weight: 600; margin-top: 2px; }
 
   /* Input (locked) — colored solid border */
-  .field.input-mode.gpm     { border-color: var(--pink); background: linear-gradient(135deg, #fff8fc, #ffe6f2); }
   .field.input-mode.aov     { border-color: var(--purple); background: linear-gradient(135deg, #f8f3ff, #ece0ff); }
   .field.input-mode.traffic { border-color: var(--teal); background: linear-gradient(135deg, #f0fbff, #ddf6fc); }
   .field.input-mode.conv    { border-color: var(--yellow); background: linear-gradient(135deg, #fffaeb, #fff4d6); }
@@ -201,7 +200,7 @@
   /* ---- ENGAGEMENT ROWS ---- */
   .eng-row {
     display: grid;
-    grid-template-columns: 38px minmax(0,1fr) 18px minmax(0,1fr) 70px minmax(0,1fr) 38px;
+    grid-template-columns: 38px minmax(0,1fr) 78px minmax(0,1fr) 30px minmax(0,1fr) 38px;
     gap: 10px; align-items: end;
     padding: 14px 0;
     border-bottom: 1px dashed var(--bg-2);
@@ -265,7 +264,7 @@
     <div class="mascot">🧮</div>
     <div>
       <h1><span>LA GLACE</span> · Sales Calculator</h1>
-      <div class="sub">คำนวณยอดขายจาก GPM / AOV / Traffic — เปรียบเทียบ scenarios ได้</div>
+      <div class="sub">คำนวณยอดขายจาก AOV / Traffic / Conversion — เปรียบเทียบ scenarios ได้</div>
     </div>
   </div>
 </header>
@@ -276,15 +275,15 @@
   <div class="formula-banner">
     <div class="formula">
       <span class="label">สมการที่ 1</span>
-      <b>Conversion</b> = GPM ÷ (10 × AOV)
-    </div>
-    <div class="formula">
-      <span class="label">สมการที่ 2</span>
       <b>Order</b> = Traffic × Conversion
     </div>
     <div class="formula">
-      <span class="label">เพิ่มเติม</span>
+      <span class="label">สมการที่ 2</span>
       <b>Revenue</b> = Order × AOV
+    </div>
+    <div class="formula">
+      <span class="label">+ Traffic จาก Engagement</span>
+      <b>Traffic</b> = Engagement × 100 ÷ ER
     </div>
   </div>
 
@@ -295,7 +294,7 @@
         <h2 style="margin: 0;">เครื่องคำนวณ — ปรับค่าได้ทุกตัว</h2>
         <div style="font-size: 12px; color: var(--mute); margin-top: 4px; line-height: 1.5;">
           พิมพ์ตัวเลขในช่องไหนก็ได้ — ระบบจะคำนวณช่องอื่นให้เอง<br>
-          ✨ <b>3 ค่าที่คุณกรอกล่าสุด = ตัวตั้งต้น</b> · 3 ค่าที่เหลือ = ผลคำนวณ
+          ✨ <b>3 ค่าที่คุณกรอกล่าสุด = ตัวตั้งต้น</b> · 2 ค่าที่เหลือ = ผลคำนวณ
         </div>
       </div>
       <div class="preset-row" style="margin-top: 0;">
@@ -307,11 +306,6 @@
     </div>
 
     <div class="var-grid" id="varGrid">
-      <div class="field" data-var="gpm">
-        <div class="row-top"><label style="margin: 0;"><span class="icon">📊</span> GPM</label><span class="badge"></span></div>
-        <input type="number" step="any" placeholder="—" data-input="gpm" />
-        <div class="unit">฿ ต่อ 1,000 views</div>
-      </div>
       <div class="field" data-var="aov">
         <div class="row-top"><label style="margin: 0;"><span class="icon">💎</span> AOV</label><span class="badge"></span></div>
         <input type="number" step="any" placeholder="—" data-input="aov" />
@@ -352,9 +346,9 @@
   <div class="card" style="margin-top: 18px;">
     <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
       <div>
-        <h2 style="margin: 0;">Engagement รายช่องทาง <span style="font-size: 11px; color: var(--mute); font-weight: 600; text-transform: none; letter-spacing: 0;">(แตก Traffic ย่อย A → H)</span></h2>
+        <h2 style="margin: 0;">Traffic จาก Engagement รายช่องทาง <span style="font-size: 11px; color: var(--mute); font-weight: 600; text-transform: none; letter-spacing: 0;">(แตกย่อย A → Z)</span></h2>
         <div style="font-size: 12px; color: var(--mute); margin-top: 4px; line-height: 1.5;">
-          สูตร: <b style="color: var(--pink);">Traffic × ER ÷ 100 = Engagement</b> · กรอก 2 ใน 3 ช่อง ระบบจะคำนวณช่องที่เหลือ<br>
+          สูตร: <b style="color: var(--pink);">Engagement × 100 ÷ ER = Traffic</b> · กรอก 2 ใน 3 ช่อง ระบบจะคำนวณช่องที่เหลือ<br>
           🔗 <b>Σ Traffic จะส่งเข้าเครื่องคำนวณหลักอัตโนมัติ</b> — ช่อง Traffic ด้านบนจะล็อกเป็นผลรวม
         </div>
       </div>
@@ -370,7 +364,7 @@
       <span>Σ Traffic: <b id="engTotTraffic">—</b></span>
       <span>Σ Engagement: <b id="engTotEng">—</b></span>
       <span>Effective ER: <b id="engEffEr">—</b></span>
-      <span style="margin-left: auto;"><b id="engRowCount">1</b> / 8 บรรทัด</span>
+      <span style="margin-left: auto;"><b id="engRowCount">1</b> / 26 บรรทัด</span>
     </div>
   </div>
 
@@ -394,10 +388,9 @@
         <thead>
           <tr>
             <th>Scenario</th>
-            <th class="num">GPM (฿/1K)</th>
             <th class="num">AOV (฿)</th>
             <th class="num">Traffic</th>
-            <th class="num">Conversion</th>
+            <th class="num">Conversion (%)</th>
             <th class="num">Orders</th>
             <th class="num">Revenue</th>
             <th class="num">vs Best</th>
@@ -408,7 +401,6 @@
         <tfoot>
           <tr style="background: var(--bg-2); font-weight: 700;">
             <td>📊 รวม / เฉลี่ย</td>
-            <td class="num" id="totGpm">—</td>
             <td class="num" id="totAov">—</td>
             <td class="num" id="totTraffic">—</td>
             <td class="num" id="totConv">—</td>
@@ -428,7 +420,7 @@
       <div class="head" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
         <div>
           <h3 style="margin: 0; font-size: 15px; font-weight: 700;">📈 Revenue vs Traffic</h3>
-          <div class="hint" style="font-size: 11px; color: var(--mute);">เพิ่ม traffic ผลลัพธ์เพิ่มเชิงเส้น (ที่ GPM/AOV เดิม)</div>
+          <div class="hint" style="font-size: 11px; color: var(--mute);">เพิ่ม traffic ผลลัพธ์เพิ่มเชิงเส้น (ที่ AOV/Conv เดิม)</div>
         </div>
       </div>
       <div class="chart-host"><canvas id="chartTraffic"></canvas></div>
@@ -437,8 +429,8 @@
     <div class="card">
       <div class="head" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
         <div>
-          <h3 style="margin: 0; font-size: 15px; font-weight: 700;">📊 Conversion vs AOV</h3>
-          <div class="hint" style="font-size: 11px; color: var(--mute);">AOV สูงขึ้น Conv% จะลดลง (GPM คงที่)</div>
+          <h3 style="margin: 0; font-size: 15px; font-weight: 700;">📊 Revenue vs AOV</h3>
+          <div class="hint" style="font-size: 11px; color: var(--mute);">AOV สูงขึ้น Revenue เพิ่มเชิงเส้น (Traffic / Conv คงที่)</div>
         </div>
       </div>
       <div class="chart-host"><canvas id="chartAov"></canvas></div>
@@ -446,18 +438,18 @@
   </div>
 
   <div class="card" style="margin-top: 18px;">
-    <h2>🎯 Sensitivity Analysis — ปรับ GPM ดูผล</h2>
+    <h2>🎯 Sensitivity Analysis — ปรับ Conversion ดูผล</h2>
     <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 18px; align-items: center;">
       <div>
-        <label>GPM Range (฿/1000 views)</label>
+        <label>Conversion Range (%)</label>
         <div style="display: flex; gap: 8px; align-items: center;">
-          <span style="font-size: 12px; color: var(--mute);">฿</span>
-          <input id="sensMin" type="number" value="50" style="width: 80px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;" />
-          <span style="font-size: 12px; color: var(--mute);">→ ฿</span>
-          <input id="sensMax" type="number" value="500" style="width: 80px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;" />
+          <input id="sensMin" type="number" step="any" value="0.05" style="width: 90px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;" />
+          <span style="font-size: 12px; color: var(--mute);">→</span>
+          <input id="sensMax" type="number" step="any" value="1" style="width: 90px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;" />
+          <span style="font-size: 12px; color: var(--mute);">%</span>
         </div>
         <div style="font-size: 12px; color: var(--mute); margin-top: 8px; line-height: 1.5;">
-          ใช้ AOV และ Traffic จากเครื่องคำนวณด่วนด้านบน เพื่อดูว่า revenue เปลี่ยนแปลงยังไงเมื่อ GPM เปลี่ยน
+          ใช้ AOV และ Traffic จากเครื่องคำนวณด่วนด้านบน เพื่อดูว่า revenue เปลี่ยนแปลงยังไงเมื่อ Conversion เปลี่ยน
         </div>
       </div>
       <div class="chart-host"><canvas id="chartSens"></canvas></div>
@@ -469,11 +461,11 @@
     <details>
       <summary>📖 คำอธิบายตัวแปร</summary>
       <div style="margin-top: 10px; font-size: 13px; line-height: 1.7; color: var(--ink-2);">
-        <p><b>GPM (Gross Profit per Mille)</b> — ยอดขายต่อ 1,000 views — เป็น metric หลักของ TikTok Shop ที่บอกว่า traffic 1,000 ครั้ง สร้างยอดได้กี่บาท ค่าทั่วไปอยู่ที่ ฿80-300 (live ดี ฿200+, viral อาจ ฿500+)</p>
         <p><b>AOV (Average Order Value)</b> — มูลค่าเฉลี่ยของ 1 order ของ LA GLACE มักอยู่ในช่วง ฿250-450 (ลิป/บลัช) ถึง ฿500-700 (set / สกินแคร์)</p>
-        <p><b>Traffic</b> — จำนวน views หรือคนที่เห็น content/live (TikTok Shop นับเป็น product page views)</p>
-        <p><b>Conversion Rate</b> — อัตราการแปลงคนดูเป็นออเดอร์ — สูตรนี้ derive จากความสัมพันธ์: Revenue = Orders × AOV และ GPM = Revenue × 1000 / Traffic ดังนั้น Conversion% = Orders / Traffic × 100 = GPM / (10 × AOV)</p>
-        <p><b>Order / Revenue</b> — จำนวน order ที่เกิด และยอดขายรวม</p>
+        <p><b>Traffic</b> — จำนวน views หรือคนที่เห็น content/live (TikTok Shop นับเป็น product page views) — สามารถแตกย่อยเป็น A → H ในการ์ด Engagement</p>
+        <p><b>Conversion Rate (%)</b> — อัตราการแปลงคนดูเป็นออเดอร์ = Orders ÷ Traffic × 100 ของ TikTok Live ปกติ 0.05–0.5% (live ดี 0.5%+, viral อาจ 1%+)</p>
+        <p><b>Order / Revenue</b> — จำนวน order ที่เกิด (= Traffic × Conv ÷ 100) และยอดขายรวม (= Orders × AOV)</p>
+        <p><b>Engagement Rate (ER, %)</b> — % ของผู้ชมที่ engage (ไลก์/แชร์/คอมเมนต์/บันทึก) — Engagement = Traffic × ER ÷ 100</p>
       </div>
     </details>
   </div>
@@ -494,29 +486,26 @@ const fmt = {
 };
 
 /* ============================================================
-   CORE CALCULATION (legacy 3-input → 3-output)
-   - Conversion (%) = GPM / (10 × AOV)
-   - Order = Traffic × Conversion (decimal)
+   CORE CALCULATION (legacy 3-input → 2-output)
+   - Order = Traffic × Conversion / 100
    - Revenue = Order × AOV
-   - Also: Revenue = Traffic × GPM / 1000 (derived)
    ============================================================ */
-function calc(gpm, aov, traffic) {
-  if (aov <= 0) return { conv: 0, orders: 0, revenue: 0 };
-  const convPct = gpm / (10 * aov);
-  const orders = traffic * (convPct / 100);
+function calc(aov, traffic, conv) {
+  if (aov <= 0) return { orders: 0, revenue: 0 };
+  const orders = traffic * (conv / 100);
   const revenue = orders * aov;
-  return { conv: convPct, orders, revenue };
+  return { orders, revenue };
 }
 
 /* ============================================================
    BIDIRECTIONAL SOLVER
-   Variables: gpm, aov, traffic, conv (%), orders, revenue
+   Variables: aov, traffic, conv (%), orders, revenue (5 vars)
+   Equations: Orders = Traffic × Conv/100, Revenue = Orders × AOV
    The user types in any field → that becomes an "input".
    The 3 most-recently-edited fields are inputs.
-   The other 3 are computed using the constraint rules below.
+   The other 2 are computed using the constraint rules below.
    ============================================================ */
 const VAR_LABELS = {
-  gpm:     { label: 'GPM',        unit: '฿/1K views', emoji: '📊' },
   aov:     { label: 'AOV',        unit: '฿/order',    emoji: '💎' },
   traffic: { label: 'Traffic',    unit: 'views',      emoji: '👀' },
   conv:    { label: 'Conversion', unit: '%',          emoji: '🎯' },
@@ -527,25 +516,18 @@ const VARS = Object.keys(VAR_LABELS);
 
 const RULES = [
   // Each rule: from `needs`, derive `gives`. fn takes named args.
-  { needs: ['gpm', 'aov'],          gives: 'conv',    fn: ({gpm, aov})              => gpm / (10 * aov) },
-  { needs: ['conv', 'aov'],         gives: 'gpm',     fn: ({conv, aov})             => 10 * aov * conv },
-  { needs: ['gpm', 'conv'],         gives: 'aov',     fn: ({gpm, conv})             => gpm / (10 * conv) },
   { needs: ['traffic', 'conv'],     gives: 'orders',  fn: ({traffic, conv})         => traffic * conv / 100 },
   { needs: ['orders', 'conv'],      gives: 'traffic', fn: ({orders, conv})          => 100 * orders / conv },
   { needs: ['orders', 'traffic'],   gives: 'conv',    fn: ({orders, traffic})       => 100 * orders / traffic },
   { needs: ['orders', 'aov'],       gives: 'revenue', fn: ({orders, aov})           => orders * aov },
   { needs: ['revenue', 'aov'],      gives: 'orders',  fn: ({revenue, aov})          => revenue / aov },
   { needs: ['revenue', 'orders'],   gives: 'aov',     fn: ({revenue, orders})       => revenue / orders },
-  // Derived: Revenue = Traffic × GPM / 1000
-  { needs: ['traffic', 'gpm'],      gives: 'revenue', fn: ({traffic, gpm})          => traffic * gpm / 1000 },
-  { needs: ['revenue', 'traffic'],  gives: 'gpm',     fn: ({revenue, traffic})      => 1000 * revenue / traffic },
-  { needs: ['revenue', 'gpm'],      gives: 'traffic', fn: ({revenue, gpm})          => 1000 * revenue / gpm },
 ];
 
 const calcState = {
-  values:  { gpm: 150, aov: 350, traffic: 50000, conv: null, orders: null, revenue: null },
+  values:  { aov: 350, traffic: 50000, conv: 0.5, orders: null, revenue: null },
   // MRU queue — front = oldest, back = newest. Always keep last 3.
-  inputs:  ['gpm', 'aov', 'traffic'],
+  inputs:  ['aov', 'traffic', 'conv'],
 };
 
 function solve() {
@@ -630,10 +612,8 @@ function renderCalculator() {
   if (allDone) {
     $('calcStep').innerHTML = `
       <div style="margin-bottom:6px; color: var(--ink);"><b>การคำนวณ:</b></div>
-      • Conversion = ${num(v.gpm)} ÷ (10 × ${num(v.aov)}) = <b>${v.conv.toFixed(3)}%</b><br>
       • Orders = ${num(v.traffic)} × ${(v.conv/100).toFixed(5)} = <b>${num(v.orders)}</b><br>
       • Revenue = ${num(v.orders)} × ${num(v.aov)} = <b>${fmt.baht(v.revenue)}</b>
-      <span class="arrow">·</span> หรือ Revenue = Traffic × GPM / 1000 = <b>${fmt.baht(v.traffic * v.gpm / 1000)}</b>
     `;
     $('solveStatus').textContent = '✓ คำนวณครบ';
     $('solveStatus').style.color = 'var(--good)';
@@ -643,7 +623,7 @@ function renderCalculator() {
       <div style="color: var(--warn);">⚠️ ยังคำนวณไม่ครบ — ลองเปลี่ยนชุดตัวตั้งต้น
       (ขาด: ${missing.map(m => VAR_LABELS[m].label).join(', ')})</div>
       <div style="font-size: 11px; color: var(--mute); margin-top: 4px;">
-        ตัวอย่างชุดที่ใช้ได้: GPM+AOV+Traffic / AOV+Conv+Orders / Revenue+Traffic+AOV
+        ตัวอย่างชุดที่ใช้ได้: AOV+Traffic+Conv / AOV+Conv+Orders / Revenue+Traffic+AOV
       </div>
     `;
     $('solveStatus').textContent = '⚠ ใส่ชุดอื่น';
@@ -688,16 +668,16 @@ document.querySelectorAll('.field input[data-input]').forEach(input => {
 });
 
 const PRESETS = {
-  small:  { gpm: 80,  aov: 290, traffic: 10000  },
-  medium: { gpm: 150, aov: 350, traffic: 50000  },
-  big:    { gpm: 220, aov: 420, traffic: 200000 },
-  viral:  { gpm: 350, aov: 380, traffic: 1000000 },
+  small:  { aov: 290, traffic: 10000,   conv: 0.028 },
+  medium: { aov: 350, traffic: 50000,   conv: 0.043 },
+  big:    { aov: 420, traffic: 200000,  conv: 0.052 },
+  viral:  { aov: 380, traffic: 1000000, conv: 0.092 },
 };
 document.querySelectorAll('.preset-chip').forEach(c => {
   c.onclick = () => {
     const p = PRESETS[c.dataset.preset];
-    calcState.inputs = ['gpm', 'aov', 'traffic'];
-    calcState.values = { gpm: p.gpm, aov: p.aov, traffic: p.traffic, conv: null, orders: null, revenue: null };
+    calcState.inputs = ['aov', 'traffic', 'conv'];
+    calcState.values = { aov: p.aov, traffic: p.traffic, conv: p.conv, orders: null, revenue: null };
     renderCalculator();
   };
 });
@@ -710,24 +690,23 @@ function getCalcVal(name) { return calcState.values[name]; }
    SCENARIOS TABLE
    ============================================================ */
 const SCENARIO_DEFAULTS = [
-  { label: '🌸 Baseline',          gpm: 150, aov: 350, traffic: 50000 },
-  { label: '🚀 Live ใหญ่',          gpm: 220, aov: 420, traffic: 200000 },
-  { label: '⚡ Viral campaign',     gpm: 350, aov: 380, traffic: 800000 },
-  { label: '💎 Premium drop',       gpm: 280, aov: 590, traffic: 80000 },
-  { label: '🌱 ปกติ Daily',         gpm: 100, aov: 290, traffic: 25000 },
+  { label: '🌸 Baseline',          aov: 350, traffic: 50000,  conv: 0.043 },
+  { label: '🚀 Live ใหญ่',          aov: 420, traffic: 200000, conv: 0.052 },
+  { label: '⚡ Viral campaign',     aov: 380, traffic: 800000, conv: 0.092 },
+  { label: '💎 Premium drop',       aov: 590, traffic: 80000,  conv: 0.047 },
+  { label: '🌱 ปกติ Daily',         aov: 290, traffic: 25000,  conv: 0.034 },
 ];
 const state = { scenarios: SCENARIO_DEFAULTS.map(s => ({ ...s })), charts: {} };
 
 function renderScenarios() {
   const tb = $('tblScenarios').querySelector('tbody');
   tb.innerHTML = state.scenarios.map((s, i) => {
-    const r = calc(+s.gpm || 0, +s.aov || 0, +s.traffic || 0);
+    const r = calc(+s.aov || 0, +s.traffic || 0, +s.conv || 0);
     return `<tr data-i="${i}">
       <td><input type="text" class="label-input" value="${escapeHtml(s.label)}" data-k="label" /></td>
-      <td class="num"><input type="number" step="any" value="${s.gpm}" data-k="gpm" /></td>
       <td class="num"><input type="number" step="any" value="${s.aov}" data-k="aov" /></td>
       <td class="num"><input type="number" step="any" value="${s.traffic}" data-k="traffic" /></td>
-      <td class="num computed">${fmt.pct(r.conv)}</td>
+      <td class="num"><input type="number" step="any" value="${s.conv}" data-k="conv" /></td>
       <td class="num computed">${fmt.num(r.orders)}</td>
       <td class="num computed"><b>${fmt.short(r.revenue)}</b></td>
       <td class="num computed"><span class="vs-best" data-rev="${r.revenue}">—</span></td>
@@ -744,12 +723,11 @@ function renderScenarios() {
       state.scenarios[i][k] = (k === 'label') ? e.target.value : (+e.target.value || 0);
       // Re-render only computed cells in this row
       const s = state.scenarios[i];
-      const r = calc(+s.gpm || 0, +s.aov || 0, +s.traffic || 0);
+      const r = calc(+s.aov || 0, +s.traffic || 0, +s.conv || 0);
       const cells = tr.querySelectorAll('td.computed');
-      cells[0].textContent = fmt.pct(r.conv);
-      cells[1].textContent = fmt.num(r.orders);
-      cells[2].innerHTML = '<b>' + fmt.short(r.revenue) + '</b>';
-      cells[3].querySelector('.vs-best').dataset.rev = r.revenue;
+      cells[0].textContent = fmt.num(r.orders);
+      cells[1].innerHTML = '<b>' + fmt.short(r.revenue) + '</b>';
+      cells[2].querySelector('.vs-best').dataset.rev = r.revenue;
       updateBest();
       updateTotals();
     };
@@ -766,7 +744,7 @@ function renderScenarios() {
 }
 
 function updateBest() {
-  const revs = state.scenarios.map(s => calc(+s.gpm, +s.aov, +s.traffic).revenue);
+  const revs = state.scenarios.map(s => calc(+s.aov, +s.traffic, +s.conv).revenue);
   const best = Math.max(...revs, 1);
   for (const el of document.querySelectorAll('.vs-best')) {
     const r = +el.dataset.rev;
@@ -779,23 +757,22 @@ function updateBest() {
 }
 
 function updateTotals() {
-  const items = state.scenarios.map(s => calc(+s.gpm || 0, +s.aov || 0, +s.traffic || 0));
+  const items = state.scenarios.map(s => calc(+s.aov || 0, +s.traffic || 0, +s.conv || 0));
   const totRev = items.reduce((a, b) => a + b.revenue, 0);
   const totOrd = items.reduce((a, b) => a + b.orders, 0);
   const totTraffic = state.scenarios.reduce((a, b) => a + (+b.traffic || 0), 0);
-  const avgGpm = state.scenarios.length > 0 ? state.scenarios.reduce((a, b) => a + (+b.gpm || 0), 0) / state.scenarios.length : 0;
-  const avgAov = state.scenarios.length > 0 ? state.scenarios.reduce((a, b) => a + (+b.aov || 0), 0) / state.scenarios.length : 0;
-  const avgConv = state.scenarios.length > 0 ? items.reduce((a, b) => a + b.conv, 0) / items.length : 0;
-  $('totGpm').textContent     = avgGpm.toFixed(0);
+  const n = state.scenarios.length;
+  const avgAov  = n > 0 ? state.scenarios.reduce((a, b) => a + (+b.aov  || 0), 0) / n : 0;
+  const avgConv = n > 0 ? state.scenarios.reduce((a, b) => a + (+b.conv || 0), 0) / n : 0;
   $('totAov').textContent     = avgAov.toFixed(0);
   $('totTraffic').textContent = fmt.num(totTraffic);
-  $('totConv').textContent    = fmt.pct(avgConv);
+  $('totConv').textContent    = avgConv.toFixed(3) + '%';
   $('totOrd').textContent     = fmt.num(totOrd);
   $('totRev').innerHTML       = '<b>' + fmt.short(totRev) + '</b>';
 }
 
 $('btnAdd').onclick = () => {
-  state.scenarios.push({ label: '✨ Scenario ' + (state.scenarios.length + 1), gpm: 150, aov: 350, traffic: 30000 });
+  state.scenarios.push({ label: '✨ Scenario ' + (state.scenarios.length + 1), aov: 350, traffic: 30000, conv: 0.05 });
   renderScenarios();
 };
 $('btnDuplicate').onclick = () => {
@@ -808,11 +785,11 @@ $('btnClear').onclick = () => {
 };
 
 $('btnExport').onclick = () => {
-  const head = ['Scenario', 'GPM', 'AOV', 'Traffic', 'Conversion%', 'Orders', 'Revenue'];
+  const head = ['Scenario', 'AOV', 'Traffic', 'Conversion%', 'Orders', 'Revenue'];
   const lines = [head.join(',')];
   for (const s of state.scenarios) {
-    const r = calc(+s.gpm, +s.aov, +s.traffic);
-    lines.push([s.label, s.gpm, s.aov, s.traffic, r.conv.toFixed(4), Math.round(r.orders), Math.round(r.revenue)].join(','));
+    const r = calc(+s.aov, +s.traffic, +s.conv);
+    lines.push([s.label, s.aov, s.traffic, (+s.conv || 0).toFixed(4), Math.round(r.orders), Math.round(r.revenue)].join(','));
   }
   const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), lines.join('\n')], { type: 'text/csv;charset=utf-8' });
   const url = URL.createObjectURL(blob);
@@ -839,16 +816,16 @@ function chartOpts(extra = {}) {
 }
 
 function renderSensitivityCharts() {
-  const gpm = +calcState.values.gpm || 0;
   const aov = +calcState.values.aov || 1;
   const traffic = +calcState.values.traffic || 0;
+  const conv = +calcState.values.conv || 0;
 
   // Chart 1: Revenue vs Traffic (varying traffic 0..2× current)
   destroyChart('traffic');
   const trafficSteps = [];
   const maxT = Math.max(traffic * 2, 100000);
   for (let i = 0; i <= 10; i++) trafficSteps.push(maxT * i / 10);
-  const trafficRev = trafficSteps.map(t => calc(gpm, aov, t).revenue);
+  const trafficRev = trafficSteps.map(t => calc(aov, t, conv).revenue);
   state.charts.traffic = new Chart($('chartTraffic').getContext('2d'), {
     type: 'line',
     data: {
@@ -871,18 +848,18 @@ function renderSensitivityCharts() {
     })
   });
 
-  // Chart 2: Conversion vs AOV
+  // Chart 2: Revenue vs AOV
   destroyChart('aov');
   const aovSteps = [];
   for (let i = 100; i <= 800; i += 50) aovSteps.push(i);
-  const convs = aovSteps.map(a => calc(gpm, a, traffic).conv);
+  const aovRev = aovSteps.map(a => calc(a, traffic, conv).revenue);
   state.charts.aov = new Chart($('chartAov').getContext('2d'), {
     type: 'line',
     data: {
       labels: aovSteps.map(a => '฿' + a),
       datasets: [{
-        label: 'Conversion %',
-        data: convs,
+        label: 'Revenue',
+        data: aovRev,
         borderColor: '#b48cff',
         backgroundColor: 'rgba(180,140,255,.15)',
         fill: true, tension: 0.4, borderWidth: 3, pointRadius: 3,
@@ -890,34 +867,34 @@ function renderSensitivityCharts() {
       }]
     },
     options: chartOpts({
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.y.toFixed(2) + '%' } } },
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => fmt.baht(c.parsed.y) } } },
       scales: {
-        y: { ticks: { callback: v => v.toFixed(2) + '%' }, grid: { color: '#f3eaf8' } },
+        y: { ticks: { callback: v => fmt.short(v) }, grid: { color: '#f3eaf8' } },
         x: { grid: { display: false }, ticks: { font: { size: 10 } } }
       }
     })
   });
 
-  // Chart 3: Sensitivity (Revenue vs GPM range)
+  // Chart 3: Sensitivity (Revenue vs Conversion range)
   renderSensRange();
 }
 
 function renderSensRange() {
   destroyChart('sens');
   const min = +$('sensMin').value || 0;
-  const max = +$('sensMax').value || 500;
+  const max = +$('sensMax').value || 1;
   const aov = +calcState.values.aov || 1;
   const traffic = +calcState.values.traffic || 0;
   const steps = [];
   const stepCount = 12;
   for (let i = 0; i <= stepCount; i++) steps.push(min + (max - min) * i / stepCount);
-  const revs   = steps.map(g => calc(g, aov, traffic).revenue);
-  const orders = steps.map(g => calc(g, aov, traffic).orders);
+  const revs   = steps.map(c => calc(aov, traffic, c).revenue);
+  const orders = steps.map(c => calc(aov, traffic, c).orders);
 
   state.charts.sens = new Chart($('chartSens').getContext('2d'), {
     type: 'bar',
     data: {
-      labels: steps.map(g => '฿' + Math.round(g)),
+      labels: steps.map(c => c.toFixed(3) + '%'),
       datasets: [
         {
           label: 'Revenue (฿)',
@@ -945,7 +922,7 @@ function renderSensRange() {
       scales: {
         y:  { position: 'left',  ticks: { callback: v => fmt.short(v) }, grid: { color: '#f3eaf8' }, title: { display: true, text: 'Revenue', font: { size: 11 } } },
         y1: { position: 'right', ticks: { callback: v => fmt.num(v) }, grid: { display: false },     title: { display: true, text: 'Orders', font: { size: 11 } } },
-        x:  { grid: { display: false }, ticks: { font: { size: 10 } }, title: { display: true, text: 'GPM (฿/1,000 views)', font: { size: 11 } } }
+        x:  { grid: { display: false }, ticks: { font: { size: 10 } }, title: { display: true, text: 'Conversion (%)', font: { size: 11 } } }
       }
     })
   });
@@ -960,10 +937,11 @@ function renderSensRange() {
    - Up to 8 rows (A → H)
    - Σ Traffic auto-feeds main calculator's Traffic field
    ============================================================ */
-const ENG_LETTERS = ['A','B','C','D','E','F','G','H'];
+const ENG_LETTERS = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i)); // A..Z
+const ENG_MAX_ROWS = 26;
 const engState = {
   rows: [
-    { traffic: null, er: null, engagement: null, inputs: ['traffic', 'er'] }
+    { traffic: null, er: null, engagement: null, inputs: ['engagement', 'er'] }
   ]
 };
 
@@ -1038,22 +1016,22 @@ function renderEngRows() {
     return `
       <div class="eng-row" data-i="${i}">
         <div class="eng-letter">${letter}</div>
-        <div class="${cls('traffic')}">
-          <label>Traffic ${letter}</label>
-          <input type="number" step="any" data-k="traffic" placeholder="—" value="${fmtEng(r.traffic)}" />
-          <span class="badge">${isI('traffic') ? '✏️' : '🔮'}</span>
+        <div class="${cls('engagement')}">
+          <label>Engagement ${letter}</label>
+          <input type="number" step="any" data-k="engagement" placeholder="—" value="${fmtEng(r.engagement)}" />
+          <span class="badge">${isI('engagement') ? '✏️' : '🔮'}</span>
         </div>
-        <div class="eng-op">×</div>
+        <div class="eng-op">× 100 ÷</div>
         <div class="${cls('er')}">
           <label>ER ${letter} (%)</label>
           <input type="number" step="any" data-k="er" placeholder="—" value="${fmtEng(r.er)}" />
           <span class="badge">${isI('er') ? '✏️' : '🔮'}</span>
         </div>
-        <div class="eng-op">÷ 100 =</div>
-        <div class="${cls('engagement')}">
-          <label>Engagement ${letter}</label>
-          <input type="number" step="any" data-k="engagement" placeholder="—" value="${fmtEng(r.engagement)}" />
-          <span class="badge">${isI('engagement') ? '✏️' : '🔮'}</span>
+        <div class="eng-op">=</div>
+        <div class="${cls('traffic')}">
+          <label>Traffic ${letter}</label>
+          <input type="number" step="any" data-k="traffic" placeholder="—" value="${fmtEng(r.traffic)}" />
+          <span class="badge">${isI('traffic') ? '✏️' : '🔮'}</span>
         </div>
         <button class="del" data-del="${i}" ${engState.rows.length === 1 ? 'disabled' : ''} title="ลบบรรทัด">✕</button>
       </div>
@@ -1093,18 +1071,18 @@ function renderEngRows() {
   $('engEffEr').textContent = (totT && totE) ? ((totE / totT) * 100).toFixed(2) + '%' : '—';
   $('engRowCount').textContent = engState.rows.length;
 
-  $('btnAddRow').disabled = engState.rows.length >= 8;
+  $('btnAddRow').disabled = engState.rows.length >= ENG_MAX_ROWS;
 }
 
 $('btnAddRow').onclick = () => {
-  if (engState.rows.length >= 8) return;
-  engState.rows.push({ traffic: null, er: null, engagement: null, inputs: ['traffic', 'er'] });
+  if (engState.rows.length >= ENG_MAX_ROWS) return;
+  engState.rows.push({ traffic: null, er: null, engagement: null, inputs: ['engagement', 'er'] });
   renderEngRows();
   renderCalculator();
 };
 
 $('btnClearRows').onclick = () => {
-  engState.rows = [{ traffic: null, er: null, engagement: null, inputs: ['traffic', 'er'] }];
+  engState.rows = [{ traffic: null, er: null, engagement: null, inputs: ['engagement', 'er'] }];
   renderEngRows();
   renderCalculator();
 };
